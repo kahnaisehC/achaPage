@@ -1,0 +1,29 @@
+menu li {
+	list-style-type: none;
+}
+
+nav,
+menu {
+	padding: 0px;
+	margin: 0px;
+}
+
+menu {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+}
+
+main {
+	padding: 0px;
+	margin: 0px;
+	display: flex;
+	justify-content: space-evenly;
+	gap: 0.25rem;
+
+}
+
+iframe {
+	height: 10rem;
+	width: 10rem;
+}
