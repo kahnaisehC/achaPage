@@ -13,28 +13,11 @@ let ws;
 
 let gameCanvas = document.getElementById("canvas");
 let gameBackground = new Image();
-console.log(gameBackground);
-console.log(gameCanvas);
-let gameCanvasCtx = gameCanvas.getContext("2d");
 gameBackground.src = "assets/horsey.jpg";
-let canvasWidth = gameCanvas.height;
-let canvasHeight = gameCanvas.width;
+let canvasWidth = gameCanvas.style.width;
+let canvasHeight = gameCanvas.style.height;
 let imageWidth = gameBackground.width;
 let imageHeight = gameBackground.height;
-
-gameBackground.onload = () => {
-  gameCanvasCtx.drawImage(
-    gameBackground,
-    0,
-    0,
-    imageWidth,
-    imageHeight,
-    0,
-    0,
-    canvasWidth,
-    canvasHeight,
-  );
-};
 
 class ChessGame {
   constructor() {
@@ -76,8 +59,20 @@ for (let colCoorASCII = "a".charCodeAt(0), i = 0; i < 8; colCoorASCII++, i++) {
   }
 }
 
-console.log(boardSquares);
 function getSquareCoordinates({ x, y, width }) {
+  if ((typeof width) === "string" || width instanceof String) {
+    let realWidth = 0;
+    for (let i = 0; i < width.length; i++) {
+      if (width.charCodeAt(i) > "9".charCodeAt() || width.charCodeAt(i) < "0") {
+        break;
+      }
+      realWidth *= 10;
+      realWidth += width.charCodeAt(i) - "0".charCodeAt();
+    }
+    width = realWidth;
+  }
+  width /= 8;
+
   retX = 8;
   retY = 8;
   for (let i = 1; i < 8; i++) {
@@ -98,16 +93,77 @@ function getSquareCoordinates({ x, y, width }) {
     .concat(
       retY,
     );
-
   return squareCoordinate;
 }
+
+function createImage(pieceInitials) {
+  let exampleImage = document.createElement("img");
+  exampleImage.src = `assets/${pieceInitials}.svg`;
+  exampleImage.style.zIndex = 10;
+  exampleImage.style.position = "relative";
+  exampleImage.style.height = "80px";
+  exampleImage.style.width = "80px";
+
+  exampleImage.addEventListener("drag");
+
+  return exampleImage;
+}
+
+function initializeGame(canvas) {
+  canvas.innerHTML = "";
+  let blackPieces = [];
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bP"));
+  blackPieces.push(createImage("bR"));
+  blackPieces.push(createImage("bN"));
+  blackPieces.push(createImage("bB"));
+  blackPieces.push(createImage("bQ"));
+  blackPieces.push(createImage("bK"));
+  blackPieces.push(createImage("bB"));
+  blackPieces.push(createImage("bN"));
+  blackPieces.push(createImage("bR"));
+
+  let whitePieces = [];
+
+  whitePieces.push(createImage("wR"));
+  whitePieces.push(createImage("wN"));
+  whitePieces.push(createImage("wB"));
+  whitePieces.push(createImage("wQ"));
+  whitePieces.push(createImage("wK"));
+  whitePieces.push(createImage("wB"));
+  whitePieces.push(createImage("wN"));
+  whitePieces.push(createImage("wR"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+  whitePieces.push(createImage("wP"));
+
+  canvas.append(...whitePieces);
+  for (let i = 0; i < 32; i++) {
+    canvas.appendChild(document.createElement("div"));
+  }
+  canvas.append(...blackPieces);
+}
+
 gameCanvas.addEventListener("mousemove", (e) => {
   squareCoordinateDisplay.innerHTML = getSquareCoordinates({
     x: e.offsetX,
     y: e.offsetY,
-    width: canvasWidth / 8,
+    width: canvasWidth,
   });
 });
+
+initializeGame(gameCanvas);
 
 function connect() {
   ws = new WebSocket("/ws");

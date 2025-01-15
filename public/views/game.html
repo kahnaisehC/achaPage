@@ -13,7 +13,29 @@
 	align-items: center;
 	justify-content: space-evenly;
 	">
-	<canvas id="canvas" width="640" height="640"></canvas>
+	<div id="canvas" style="
+			background-size: cover;
+			background-image: url('assets/horsey.jpg');
+			width: 640px;
+			height: 640px;
+			padding: 0;
+			margin: 0;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+			grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+			
+		">
+		<div>
+		</div>
+		<div>
+			<img src="assets/bN.svg" style="
+				z-index: 10;
+				position:relative;
+				height: 80px;
+				width: 80px;
+			" />
+		</div>
+	</div>
 	<h1 id="squareCoordinateDisplay"></h1>
 </div>
 <div id="playeronediv" style="height: 100px; width: 100px; background: blue;">
