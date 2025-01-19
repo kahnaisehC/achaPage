@@ -5,30 +5,28 @@ const p2_input = document.getElementById("playertwoinput");
 const p2_div = document.getElementById("playertwodiv");
 const p2_button = document.getElementById("playertwobutton");
 
-function connect() {
-  ws = new WebSocket("/ws");
-  ws.onopen = function() {
-    console.log("Connected or something");
-  };
+const ws = new WebSocket("/ws");
+ws.onopen = function() {
+  console.log("Connected or something");
+};
 
-  ws.onmessage = function(event) {
-    const information = event.data;
-    if (information[1] == "1") {
-      p1_div.innerHTML += `<p>${event.data}\n</p>`;
-    } else {
-      p2_div.innerHTML += `<p>${event.data}\n</p>`;
-    }
-  };
+ws.onmessage = function(event) {
+  const information = event.data;
+  if (information[1] == "1") {
+    p1_div.innerHTML += `<p>${event.data}\n</p>`;
+  } else {
+    p2_div.innerHTML += `<p>${event.data}\n</p>`;
+  }
+};
 
-  ws.onclose = function() {
-    console.log("Trying to reconnect...");
-    setTimeout(connect, 1000);
-  };
+ws.onclose = function() {
+  console.log("Trying to reconnect...");
+  setTimeout(connect, 1000);
+};
 
-  ws.onerror = function(error) {
-    console.error("WebSocket error:", error);
-  };
-}
+ws.onerror = function(error) {
+  console.error("WebSocket error:", error);
+};
 
 p1_button.addEventListener("click", function() {
   const input = p1_input.value;
