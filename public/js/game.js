@@ -1,44 +1,52 @@
 const MOVE_VERSION = "0";
 
 const chessboardDisplay = document.getElementById("chessboard");
-const gameBackground = new Image();
-gameBackground.src = "assets/horsey.jpg";
+const [
+  WKING,
+  WQUEEN,
+  WROOK,
+  WBISHOP,
+  WKNIGHT,
+  WPAWN,
+] = [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+  ];
+const [
+  BKING,
+  BQUEEN,
+  BROOK,
+  BBISHOP,
+  BKNIGHT,
+  BPAWN,
+] = [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+  ];
 
-const initialPosition = new Map([
-  ["a1", "wR"],
-  ["b1", "wN"],
-  ["c1", "wB"],
-  ["d1", "wQ"],
-  ["e1", "wK"],
-  ["f1", "wB"],
-  ["g1", "wN"],
-  ["h1", "wR"],
-  ["a2", "wP"],
-  ["b2", "wP"],
-  ["c2", "wP"],
-  ["d2", "wP"],
-  ["e2", "wP"],
-  ["f2", "wP"],
-  ["g2", "wP"],
-  ["h2", "wP"],
-  ["a8", "bR"],
-  ["b8", "bN"],
-  ["c8", "bB"],
-  ["d8", "bQ"],
-  ["e8", "bK"],
-  ["f8", "bB"],
-  ["g8", "bN"],
-  ["h8", "bR"],
-  ["a7", "bP"],
-  ["b7", "bP"],
-  ["c7", "bP"],
-  ["d7", "bP"],
-  ["e7", "bP"],
-  ["f7", "bP"],
-  ["g7", "bP"],
-  ["h7", "bP"],
-]);
-
+const pieceNames = [
+  undefined,
+  "wK",
+  "wQ",
+  "wR",
+  "wB",
+  "wN",
+  "wP",
+  "bK",
+  "bQ",
+  "bR",
+  "bB",
+  "bN",
+  "bP",
+];
 class Piece {
   constructor(name, display = undefined) {
     this.name = name;
@@ -61,12 +69,38 @@ class ChessGame {
   // 0001 => black can castle kingside
   // 1111 => everybody can castle anywhere
 
+  boardState = [
+    [WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK],
+    [WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN],
+    [BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING, BBISHOP, BKNIGHT, BROOK],
+  ];
+  // NOTE: the board is reflected so the coordinates match the coordinates
+  // a1 == 00; b1 == 01 ... h1 == 07
+  // a2 == 10; b2 == 11 ... h2 == 17
+  // ...
+  // a8 == 70; b8 == 71 ... h8 == 77
+  //
+  piecesDisplays = new Map();
+
   constructor(chessboardDisplay) {
     this.display = chessboardDisplay;
-    this.boardState = new Map();
-    // NOTE: html element that displays the chessgame
-    for (const [coor, piece] of initialPosition.entries()) {
-      this.boardState.set(coor, new Piece(piece));
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const piece = this.boardState[i][j];
+        if (piece !== 0) {
+          const coordinate = String.fromCharCode(j + "a".charCodeAt()) +
+            String.fromCharCode(i + "1".charCodeAt());
+          this.piecesDisplays.set(
+            coordinate,
+            this.createImage(piece, coordinate),
+          );
+        }
+      }
     }
   }
 
@@ -74,16 +108,70 @@ class ChessGame {
    * @param {string} move
    */
 
-  checkMoveLegality(version, pieceDisplay, toCoordinate) {
-    const fromCoordinate = pieceDisplay.style.gridArea;
-    console.log(pieceDisplay);
-
+  checkMoveLegality(move) {
+    console.log(move);
+    const version = move.charAt(0);
     switch (version) {
-      case "0":
-        return true;
-      default:
+      case "0": {
+        const fromColumn = move.charCodeAt(1) - "a".charCodeAt();
+        const fromRow = move.charCodeAt(2) - "1".charCodeAt();
+        const toColumn = move.charCodeAt(3) - "a".charCodeAt();
+        const toRow = move.charCodeAt(4) - "1".charCodeAt();
+        if (fromColumn === toColumn && fromRow === toRow) return false;
+        const piece = this.boardState[fromRow][fromColumn];
+        if (piece === 0) return false;
+        console.log(piece);
+        if (this.whiteToMove && piece > 6) {
+          console.log("white to move!");
+          return false;
+        }
+        if (!this.whiteToMove && piece < 7) {
+          console.log("black to move!");
+          return false;
+        }
+        switch (piece) {
+          case BROOK: {
+            let queue = [];
+            queue.push([fromRow, fromColumn]);
+            while (queue.length !== 0) {
+              let currSquare = queue.pop();
+              let nextSquare = currSquare
+              while ((nextSquare[0] + 1) !== 8) {
+                if ()
+              }
+            }
+            break;
+          }
+          case BKNIGHT: {
+          }
+          case BBISHOP: {
+          }
+          case BQUEEN: {
+          }
+          case BKING: {
+          }
+          case BPAWN: {
+          }
+          case WROOK: {
+          }
+          case WKNIGHT: {
+          }
+          case WBISHOP: {
+          }
+          case WQUEEN: {
+          }
+          case WKING: {
+          }
+          case WPAWN: {
+          }
+        }
+        break;
+      }
+      default: {
         return false;
+      }
     }
+    return true;
   }
 
   getSquareCoordinates(coordinates) {
@@ -94,28 +182,30 @@ class ChessGame {
 
     return [x, y];
   }
-  getPromotion(fromCoordinate, toCoordinate, pieceName) {
+  getPromotion(fromCoordinate, toCoordinate, piece) {
+    const pieceName = pieceNames[piece];
     if (
       pieceName === "bP" &&
       fromCoordinate.charAt(1) === "2" &&
       toCoordinate.charAt(1) === "1"
     ) {
-      return "Q";
+      return BQUEEN;
     }
     if (
       pieceName === "wP" &&
       fromCoordinate.charAt(1) === "7" &&
       toCoordinate.charAt(1) === "8"
     ) {
-      return "Q";
+      return WQUEEN;
     }
 
-    return "_";
+    return 0;
   }
 
-  createImage(pieceInitials, coordinates = "a1") {
+  createImage(piece, coordinates = "a1") {
+    const pieceInitials = pieceNames[piece];
     const pieceImage = document.createElement("img");
-    pieceImage.pieceName = pieceInitials;
+    pieceImage.pieceName = piece;
     pieceImage.src = `assets/${pieceInitials}.svg`;
     pieceImage.style.zIndex = 1;
     pieceImage.style.top = 0;
@@ -153,7 +243,6 @@ class ChessGame {
       const realLeftOffset = cuadrant.x + globalThis.scrollX;
       const x = e.pageX - realLeftOffset;
       const y = e.pageY - realTopOffset;
-      console.log(realTopOffset, x, y);
       let nextCoordinate = "__";
       let prevCoordinate = pieceImage.id;
 
@@ -181,8 +270,8 @@ class ChessGame {
 
       if (
         this.checkMoveLegality(
-          MOVE_VERSION,
-          e.target,
+          MOVE_VERSION +
+          e.target.id +
           nextCoordinate,
         )
       ) {
@@ -191,25 +280,31 @@ class ChessGame {
           nextCoordinate,
           pieceImage.pieceName,
         );
-        if (promotion !== "_") {
-          pieceImage.pieceName = pieceImage.pieceName.charAt() + promotion;
-          pieceImage.src = `assets/${pieceImage.pieceName}.svg`;
+        if (promotion !== 0) {
+          pieceImage.pieceName = promotion;
+          pieceImage.src = `assets/${pieceNames[promotion]}.svg`;
         }
         pieceImage.style.gridArea = nextCoordinate;
-        const pieceToDelete = this.boardState.get(nextCoordinate);
-        if (pieceToDelete) {
-          pieceToDelete.display.remove();
+        let prevCoordinateRow = prevCoordinate.charCodeAt(1) - "1".charCodeAt();
+        let prevCoordinateColumn = prevCoordinate.charCodeAt(0) -
+          "a".charCodeAt();
+        let nextCoordinateRow = nextCoordinate.charCodeAt(1) - "1".charCodeAt();
+        let nextCoordinateColumn = nextCoordinate.charCodeAt(0) -
+          "a".charCodeAt();
+
+        this.boardState[prevCoordinateRow][prevCoordinateColumn] = 0;
+        this.boardState[nextCoordinateRow][nextCoordinateColumn] =
+          pieceImage.pieceName;
+        if (this.piecesDisplays.get(nextCoordinate) !== undefined) {
+          this.piecesDisplays.get(nextCoordinate).remove();
+          this.piecesDisplays.delete(nextCoordinate);
         }
-        this.boardState.delete(nextCoordinate);
-        this.boardState.delete(prevCoordinate);
-        this.boardState.set(
-          nextCoordinate,
-          new Piece(
-            pieceImage.pieceName,
-            pieceImage,
-          ),
-        );
+        this.piecesDisplays.delete(prevCoordinate);
+        this.piecesDisplays.set(nextCoordinate, pieceImage);
         pieceImage.id = nextCoordinate;
+        pieceImage.style.gridArea = nextCoordinate;
+        this.whiteToMove = !this.whiteToMove;
+        console.log(this.boardState);
       }
     });
 
@@ -217,19 +312,11 @@ class ChessGame {
   }
 
   initializeBoard() {
-    for (const [coordinate, piece] of this.boardState.entries()) {
-      console.log(piece);
-      const pieceDisplay = this.createImage(piece.name, coordinate);
-      this.boardState.get(coordinate).display = pieceDisplay;
-      this.display.appendChild(pieceDisplay);
-    }
   }
   renderBoard() {
-    for (const coordinates of this.boardState.keys()) {
-      const piece = this.boardState.get(coordinates);
-      console.log(piece);
-      piece.display.style.height = this.display.offsetHeight / 8;
-      piece.display.style.width = this.display.offsetWidth / 8;
+    this.display;
+    for (const [coordinate, pieceDisplay] of this.piecesDisplays.entries()) {
+      this.display.appendChild(pieceDisplay);
     }
   }
 }
