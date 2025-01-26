@@ -111,6 +111,9 @@ class ChessGame {
   checkMoveLegality(move) {
     console.log(move);
     const version = move.charAt(0);
+    let canMove = false;
+    let row, col;
+    /* eslint-disable no-fallthrough */
     switch (version) {
       case "0": {
         const fromColumn = move.charCodeAt(1) - "a".charCodeAt();
@@ -120,7 +123,6 @@ class ChessGame {
         if (fromColumn === toColumn && fromRow === toRow) return false;
         const piece = this.boardState[fromRow][fromColumn];
         if (piece === 0) return false;
-        console.log(piece);
         if (this.whiteToMove && piece > 6) {
           console.log("white to move!");
           return false;
@@ -129,36 +131,326 @@ class ChessGame {
           console.log("black to move!");
           return false;
         }
+
+        console.log(toColumn, toRow);
+        console.log(piece);
+
         switch (piece) {
-          case BROOK: {
-            let queue = [];
-            queue.push([fromRow, fromColumn]);
-            while (queue.length !== 0) {
-              let currSquare = queue.pop();
-              let nextSquare = currSquare
-              while ((nextSquare[0] + 1) !== 8) {
-                if ()
+          case BQUEEN:
+          case BROOK:
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8) {
+              row++;
+              console.log("up:", col, row);
+              if (this.boardState[row][col] > 7) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
               }
             }
+
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1) {
+              row--;
+              console.log("down:", col, row);
+
+              if (this.boardState[row][col] > 7) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+            }
+
+            row = fromRow, col = fromColumn;
+            while ((col - 1) > -1) {
+              col--;
+              console.log("left:", col, row);
+              if (this.boardState[row][col] > 7) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+            }
+
+            row = fromRow, col = fromColumn;
+            while ((col + 1) < 8) {
+              col++;
+              console.log("right:", col, row);
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+            }
+            if (!canMove && piece === BROOK) {
+              return false;
+            }
+            if (piece === BROOK) break;
+
+          case BBISHOP: {
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8 && (col + 1) < 8) {
+              row++;
+              col++;
+              console.log("up-left: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1 && (col + 1) < 8) {
+              row--;
+              col++;
+              console.log("down-left: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1 && (col - 1) > -1) {
+              row--;
+              col--;
+              console.log("down-right: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8 && (col - 1) > -1) {
+              row++;
+              col--;
+              console.log("up-right: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+            }
+            if (!canMove) return false;
+
             break;
           }
+
           case BKNIGHT: {
-          }
-          case BBISHOP: {
-          }
-          case BQUEEN: {
+            break;
           }
           case BKING: {
+            break;
           }
           case BPAWN: {
+            break;
           }
-          case WROOK: {
+          case WQUEEN:
+          case WROOK:
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8) {
+              row++;
+              console.log("up:", col, row);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              // if there is a black piece in the next square
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) {
+                break;
+              }
+            }
+
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1) {
+              row--;
+              console.log("down:", col, row);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              // if there is a black piece in the next square
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) {
+                break;
+              }
+            }
+            row = fromRow, col = fromColumn;
+            while ((col - 1) > -1) {
+              col--;
+              console.log("left:", col, row);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              // if there is a black piece in the next square
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) {
+                break;
+              }
+            }
+
+            row = fromRow, col = fromColumn;
+            while ((col + 1) < 8) {
+              col++;
+              console.log("right:", col, row);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) {
+                break;
+              }
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              // if there is a black piece in the next square
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) {
+                break;
+              }
+            }
+            if (!canMove && piece === WROOK) {
+              return false;
+            }
+            if (piece === WROOK) break;
+
+          case WBISHOP: {
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8 && (col + 1) < 8) {
+              row++;
+              col++;
+              console.log("up-left: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1 && (col + 1) < 8) {
+              row--;
+              col++;
+              console.log("down-left: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row - 1) > -1 && (col - 1) > -1) {
+              row--;
+              col--;
+              console.log("down-right: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+            }
+            row = fromRow, col = fromColumn;
+            while ((row + 1) < 8 && (col - 1) > -1) {
+              row++;
+              col--;
+              console.log("up-right: ", row, col);
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+              ) break;
+              if (row === toRow && col === toColumn) {
+                canMove = true;
+                break;
+              }
+              if (
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+              ) break;
+            }
+            if (!canMove) return false;
+
+            break;
           }
           case WKNIGHT: {
-          }
-          case WBISHOP: {
-          }
-          case WQUEEN: {
+            break;
           }
           case WKING: {
           }
@@ -171,6 +463,7 @@ class ChessGame {
         return false;
       }
     }
+    /* eslint-disable no-fallthrough */
     return true;
   }
 
@@ -218,6 +511,7 @@ class ChessGame {
     pieceImage.userSelect = "none";
 
     pieceImage.addEventListener("drag", (e) => {
+      pieceImage.style.zIndex = 100;
       pieceImage.style.position = "absolute";
       pieceImage.style.transform = `translate(${e.pageX - this.display.offsetWidth / 16
         }px, ${e.pageY - this.display.offsetHeight / 16}px)`;
@@ -237,6 +531,7 @@ class ChessGame {
     pieceImage.addEventListener("dragend", (e) => {
       pieceImage.style.position = "static";
       pieceImage.style.transform = "none";
+      pieceImage.style.zIndex = 10;
 
       const cuadrant = this.display.getBoundingClientRect();
       const realTopOffset = cuadrant.y + globalThis.scrollY;
