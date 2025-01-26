@@ -283,6 +283,28 @@ class ChessGame {
           }
 
           case BKNIGHT: {
+            row = fromRow, col = fromColumn;
+            let knightMovements = [
+              [2, 1],
+              [2, -1],
+              [1, 2],
+              [-1, 2],
+              [-2, 1],
+              [-2, -1],
+              [1, -2],
+              [-1, -2],
+            ];
+            for (const [rowPlus, colPlus] of knightMovements) {
+              if (
+                (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
+                (col + colPlus) < 0 || (col + colPlus) > 7
+              ) continue;
+              if (this.boardState[row + rowPlus][col + colPlus] > 7) continue;
+              if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
+                canMove = true;
+              }
+            }
+            if (!canMove) return false;
             break;
           }
           case BKING: {
@@ -450,6 +472,31 @@ class ChessGame {
             break;
           }
           case WKNIGHT: {
+            row = fromRow, col = fromColumn;
+            let knightMovements = [
+              [2, 1],
+              [2, -1],
+              [1, 2],
+              [-1, 2],
+              [-2, 1],
+              [-2, -1],
+              [1, -2],
+              [-1, -2],
+            ];
+            for (const [rowPlus, colPlus] of knightMovements) {
+              if (
+                (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
+                (col + colPlus) < 0 || (col + colPlus) > 7
+              ) continue;
+              if (
+                this.boardState[row + rowPlus][col + colPlus] !== 0 &&
+                this.boardState[row + rowPlus][col + colPlus] < 8
+              ) continue;
+              if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
+                canMove = true;
+              }
+            }
+            if (!canMove) return false;
             break;
           }
           case WKING: {
