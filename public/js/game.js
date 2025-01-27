@@ -581,6 +581,33 @@ class ChessGame {
             break;
           }
           case WPAWN: {
+            row = fromRow, col = fromColumn;
+            if (this.boardState[row + 1][col] === 0) {
+              if (row + 1 === toRow && toColumn === col) {
+                canMove = true;
+              }
+              if (
+                row === 1 && this.boardState[row + 2][col] === 0 &&
+                row + 2 === toRow && toColumn === col
+              ) {
+                canMove = true;
+              }
+            }
+            if (
+              this.boardState[row + 1][col - 1] > 6 && toRow === row + 1 &&
+              toColumn === col - 1
+            ) {
+              canMove = true;
+            }
+            if (
+              this.boardState[row + 1][col + 1] > 6 && toRow === row + 1 &&
+              toColumn === col + 1
+            ) {
+              canMove = true;
+            }
+            if (!canMove) return false;
+            // TODO: Handle en passant
+            break;
           }
         }
         break;
