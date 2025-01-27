@@ -219,14 +219,14 @@ class ChessGame {
               col++;
               console.log("up-left: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -235,14 +235,14 @@ class ChessGame {
               col++;
               console.log("down-left: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -251,14 +251,14 @@ class ChessGame {
               col--;
               console.log("down-right: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -267,14 +267,14 @@ class ChessGame {
               col--;
               console.log("up-right: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
             }
             if (!canMove) return false;
@@ -284,7 +284,7 @@ class ChessGame {
 
           case BKNIGHT: {
             row = fromRow, col = fromColumn;
-            let knightMovements = [
+            let movements = [
               [2, 1],
               [2, -1],
               [1, 2],
@@ -294,12 +294,12 @@ class ChessGame {
               [1, -2],
               [-1, -2],
             ];
-            for (const [rowPlus, colPlus] of knightMovements) {
+            for (const [rowPlus, colPlus] of movements) {
               if (
                 (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
                 (col + colPlus) < 0 || (col + colPlus) > 7
               ) continue;
-              if (this.boardState[row + rowPlus][col + colPlus] > 7) continue;
+              if (this.boardState[row + rowPlus][col + colPlus] > 6) continue;
               if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
                 canMove = true;
               }
@@ -308,9 +308,60 @@ class ChessGame {
             break;
           }
           case BKING: {
+            row = fromRow, col = fromColumn;
+            let movements = [
+              [0, 1],
+              [0, -1],
+              [1, 0],
+              [-1, 0],
+              [-1, -1],
+              [1, -1],
+              [1, 1],
+              [-1, 1],
+            ];
+            for (const [rowPlus, colPlus] of movements) {
+              if (
+                (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
+                (col + colPlus) < 0 || (col + colPlus) > 7
+              ) continue;
+              console.log("move: ", row + rowPlus, col + colPlus);
+              if (this.boardState[row + rowPlus][col + colPlus] > 7) continue;
+              if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
+                canMove = true;
+              }
+            }
+            if (!canMove) return false;
             break;
           }
           case BPAWN: {
+            row = fromRow, col = fromColumn;
+            if (this.boardState[fromRow - 1][col] === 0) {
+              if (row - 1 === toRow && toColumn === col) {
+                canMove = true;
+              }
+              if (
+                row === 6 && this.boardState[row - 2][col] === 0 &&
+                row - 2 === toRow && toColumn === col
+              ) {
+                canMove = true;
+              }
+            }
+            if (
+              this.boardState[row - 1][col - 1] !== 0 &&
+              this.boardState[row - 1][col - 1] < 7 && toRow === row - 1 &&
+              toColumn === col - 1
+            ) {
+              canMove = true;
+            }
+            if (
+              this.boardState[row - 1][col + 1] !== 0 &&
+              this.boardState[row - 1][col + 1] < 7 && toRow === row - 1 &&
+              toColumn === col + 1
+            ) {
+              canMove = true;
+            }
+            if (!canMove) return false;
+            // TODO: Handle en passant
             break;
           }
           case WQUEEN:
@@ -320,7 +371,7 @@ class ChessGame {
               row++;
               console.log("up:", col, row);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) {
                 break;
               }
@@ -330,7 +381,7 @@ class ChessGame {
               }
               // if there is a black piece in the next square
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) {
                 break;
               }
@@ -341,7 +392,7 @@ class ChessGame {
               row--;
               console.log("down:", col, row);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) {
                 break;
               }
@@ -351,7 +402,7 @@ class ChessGame {
               }
               // if there is a black piece in the next square
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) {
                 break;
               }
@@ -361,7 +412,7 @@ class ChessGame {
               col--;
               console.log("left:", col, row);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) {
                 break;
               }
@@ -371,7 +422,7 @@ class ChessGame {
               }
               // if there is a black piece in the next square
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) {
                 break;
               }
@@ -382,7 +433,7 @@ class ChessGame {
               col++;
               console.log("right:", col, row);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) {
                 break;
               }
@@ -392,7 +443,7 @@ class ChessGame {
               }
               // if there is a black piece in the next square
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) {
                 break;
               }
@@ -409,14 +460,14 @@ class ChessGame {
               col++;
               console.log("up-left: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -425,14 +476,14 @@ class ChessGame {
               col++;
               console.log("down-left: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -441,14 +492,14 @@ class ChessGame {
               col--;
               console.log("down-right: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
             }
             row = fromRow, col = fromColumn;
@@ -457,14 +508,14 @@ class ChessGame {
               col--;
               console.log("up-right: ", row, col);
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] < 8
+                this.boardState[row][col] !== 0 && this.boardState[row][col] < 7
               ) break;
               if (row === toRow && col === toColumn) {
                 canMove = true;
                 break;
               }
               if (
-                this.boardState[row][col] !== 0 && this.boardState[row][col] > 7
+                this.boardState[row][col] !== 0 && this.boardState[row][col] > 6
               ) break;
             }
             if (!canMove) return false;
@@ -473,7 +524,7 @@ class ChessGame {
           }
           case WKNIGHT: {
             row = fromRow, col = fromColumn;
-            let knightMovements = [
+            let movements = [
               [2, 1],
               [2, -1],
               [1, 2],
@@ -483,14 +534,14 @@ class ChessGame {
               [1, -2],
               [-1, -2],
             ];
-            for (const [rowPlus, colPlus] of knightMovements) {
+            for (const [rowPlus, colPlus] of movements) {
               if (
                 (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
                 (col + colPlus) < 0 || (col + colPlus) > 7
               ) continue;
               if (
                 this.boardState[row + rowPlus][col + colPlus] !== 0 &&
-                this.boardState[row + rowPlus][col + colPlus] < 8
+                this.boardState[row + rowPlus][col + colPlus] < 7
               ) continue;
               if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
                 canMove = true;
@@ -500,6 +551,34 @@ class ChessGame {
             break;
           }
           case WKING: {
+            row = fromRow, col = fromColumn;
+            let movements = [
+              [0, 1],
+              [0, -1],
+              [1, 0],
+              [-1, 0],
+              [-1, -1],
+              [1, -1],
+              [1, 1],
+              [-1, 1],
+            ];
+            for (const [rowPlus, colPlus] of movements) {
+              if (
+                (row + rowPlus) < 0 || (row + rowPlus) > 7 ||
+                (col + colPlus) < 0 || (col + colPlus) > 7
+              ) continue;
+
+              console.log("move: ", row + rowPlus, col + colPlus);
+              if (
+                this.boardState[row + rowPlus][col + colPlus] !== 0 &&
+                this.boardState[row + rowPlus][col + colPlus] < 7
+              ) continue;
+              if (toRow === (row + rowPlus) && toColumn === (col + colPlus)) {
+                canMove = true;
+              }
+            }
+            if (!canMove) return false;
+            break;
           }
           case WPAWN: {
           }
