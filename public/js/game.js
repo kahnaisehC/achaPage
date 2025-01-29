@@ -47,6 +47,12 @@ const pieceNames = [
   "bN",
   "bP",
 ];
+
+function arrayCoordToChessCoord(row, col) {
+  return String.fromCharCode(col + "a".charCodeAt()) +
+    String.fromCharCode(row + "1".charCodeAt());
+}
+
 class Piece {
   constructor(name, display = undefined) {
     this.name = name;
@@ -113,7 +119,6 @@ class ChessGame {
     const version = move.charAt(0);
     let canMove = false;
     let row, col;
-    /* eslint-disable no-fallthrough */
     switch (version) {
       case "0": {
         const fromColumn = move.charCodeAt(1) - "a".charCodeAt();
@@ -211,7 +216,7 @@ class ChessGame {
               return false;
             }
             if (piece === BROOK) break;
-
+          /* falls through*/
           case BBISHOP: {
             row = fromRow, col = fromColumn;
             while ((row + 1) < 8 && (col + 1) < 8) {
@@ -452,6 +457,7 @@ class ChessGame {
               return false;
             }
             if (piece === WROOK) break;
+          /* falls through*/
 
           case WBISHOP: {
             row = fromRow, col = fromColumn;
@@ -610,13 +616,161 @@ class ChessGame {
             break;
           }
         }
+        let nextBoardState = [];
+        for (const row of this.boardState) {
+          nextBoardState.push([...row]);
+        }
+        //TODO: handle en passant
+        nextBoardState[toRow][toColumn] = this.boardState[fromRow][fromColumn];
+        nextBoardState[fromRow][fromColumn] = 0;
+        if (this.whiteToMove) {
+          let kingRow = -1;
+          let kingCol = -1;
+
+          for (let kRow = 0; kRow < 8; kRow++) {
+            for (let kCol = 0; kCol < 8; kCol++) {
+              if (nextBoardState[kRow][kCol] === WKING) {
+                kingRow = kRow;
+                kingCol = kCol;
+                break;
+              }
+              if (kingRow !== -1) break;
+            }
+          }
+          console.log(
+            "the king is on: ",
+            arrayCoordToChessCoord(kingRow, kingCol),
+          );
+
+          // check for rooks
+          let movements = [
+            [-1, 0],
+            [1, 0],
+            [0, 1],
+            [0, -1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            row = kingRow, col = kingCol;
+            while (
+              (row + rowPlus) < 8 && (row + rowPlus) > -1 &&
+              (col + colPlus) < 8 && (col + colPlus) > -1
+            ) {
+              row += rowPlus;
+              col += colPlus;
+              // if there is a black piece in the next square
+              if (
+                nextBoardState[row][col] === BROOK ||
+                nextBoardState[row][col] === BQUEEN
+              ) {
+                return false;
+              }
+              if (nextBoardState[row][col] !== 0) {
+                break;
+              }
+            }
+          }
+
+          // check for bishops
+          movements = [
+            [-1, 1],
+            [1, 1],
+            [1, -1],
+            [-1, -1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            row = kingRow, col = kingCol;
+            while (
+              (row + rowPlus) < 8 && (row + rowPlus) > -1 &&
+              (col + colPlus) < 8 && (col + colPlus) > -1
+            ) {
+              row += rowPlus;
+              col += colPlus;
+              // if there is a black piece in the next square
+              if (
+                nextBoardState[row][col] === BBISHOP ||
+                nextBoardState[row][col] === BQUEEN
+              ) {
+                return false;
+              }
+              if (nextBoardState[row][col] !== 0) {
+                break;
+              }
+            }
+          }
+          // check for pawns
+
+          if (
+            kingRow + 1 < 8 && kingCol + 1 < 8 &&
+            nextBoardState[kingRow + 1][kingCol + 1] === BPAWN
+          ) {
+            return false;
+          }
+          if (
+            kingRow + 1 < 8 && kingCol - 1 > -1 &&
+            nextBoardState[kingRow + 1][kingCol + 1] === BPAWN
+          ) {
+            return false;
+          }
+
+          // check for king
+          movements = [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [-1, 0],
+            [-1, -1],
+            [1, -1],
+            [1, 1],
+            [-1, 1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            if (
+              kingRow + rowPlus > 7 || kingRow + rowPlus < 0 ||
+              kingCol + colPlus > 7 || kingCol + colPlus < 0
+            ) {
+              continue;
+            }
+            if (
+              nextBoardState[kingRow + rowPlus][kingCol + colPlus] === BKING
+            ) {
+              return false;
+            }
+          }
+          // check for knights
+
+          movements = [
+            [2, 1],
+            [2, -1],
+            [1, 2],
+            [-1, 2],
+            [-2, 1],
+            [-2, -1],
+            [1, -2],
+            [-1, -2],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            if (
+              kingRow + rowPlus > 7 || kingRow + rowPlus < 0 ||
+              kingCol + colPlus > 7 || kingCol + colPlus < 0
+            ) {
+              continue;
+            }
+            if (
+              nextBoardState[kingRow + rowPlus][kingCol + colPlus] === BKNIGHT
+            ) {
+              return false;
+            }
+          }
+        } else {
+          // check for black to move
+        }
         break;
       }
       default: {
         return false;
       }
     }
-    /* eslint-disable no-fallthrough */
+
     return true;
   }
 
