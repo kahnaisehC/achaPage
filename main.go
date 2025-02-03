@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -50,7 +51,6 @@ func wsHandler(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-
 		fmt.Printf("%s\n", msg)
 	}
 }
@@ -63,7 +63,6 @@ func sendMessageToAllPool(msg []byte) error {
 		if err != nil {
 			return err
 		}
-
 	}
 	return nil
 }

@@ -48,15 +48,23 @@ const pieceNames = [
   "bP",
 ];
 
+const ws = new WebSocket("/ws");
+
 function arrayCoordToChessCoord(row, col) {
   return String.fromCharCode(col + "a".charCodeAt()) +
     String.fromCharCode(row + "1".charCodeAt());
 }
 
-class Piece {
-  constructor(name, display = undefined) {
-    this.name = name;
-    this.display = display;
+function separateElements(move) {
+  switch (move.charAt(0)) {
+    case "0":
+      return [
+        move.charAt(1) + move.charAt(2),
+        move.charAt(3) + move.charAt(4),
+        move.charCodeAt(5) - "0".charCodeAt(),
+      ];
+    default:
+      return ["a1", "a1", 0];
   }
 }
 
@@ -703,12 +711,14 @@ class ChessGame {
             kingRow + 1 < 8 && kingCol + 1 < 8 &&
             nextBoardState[kingRow + 1][kingCol + 1] === BPAWN
           ) {
+            console.log("pawn check");
             return false;
           }
           if (
             kingRow + 1 < 8 && kingCol - 1 > -1 &&
-            nextBoardState[kingRow + 1][kingCol + 1] === BPAWN
+            nextBoardState[kingRow + 1][kingCol - 1] === BPAWN
           ) {
+            console.log("pawn check");
             return false;
           }
 
@@ -763,6 +773,145 @@ class ChessGame {
           }
         } else {
           // check for black to move
+          let kingRow = -1;
+          let kingCol = -1;
+
+          for (let kRow = 0; kRow < 8; kRow++) {
+            for (let kCol = 0; kCol < 8; kCol++) {
+              if (nextBoardState[kRow][kCol] === BKING) {
+                kingRow = kRow;
+                kingCol = kCol;
+                break;
+              }
+              if (kingRow !== -1) break;
+            }
+          }
+          console.log(
+            "the king is on: ",
+            arrayCoordToChessCoord(kingRow, kingCol),
+          );
+
+          // check for rooks
+          let movements = [
+            [-1, 0],
+            [1, 0],
+            [0, 1],
+            [0, -1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            row = kingRow, col = kingCol;
+            while (
+              (row + rowPlus) < 8 && (row + rowPlus) > -1 &&
+              (col + colPlus) < 8 && (col + colPlus) > -1
+            ) {
+              row += rowPlus;
+              col += colPlus;
+              // if there is a black piece in the next square
+              if (
+                nextBoardState[row][col] === WROOK ||
+                nextBoardState[row][col] === WQUEEN
+              ) {
+                return false;
+              }
+              if (nextBoardState[row][col] !== 0) {
+                break;
+              }
+            }
+          }
+
+          // check for bishops
+          movements = [
+            [-1, 1],
+            [1, 1],
+            [1, -1],
+            [-1, -1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            row = kingRow, col = kingCol;
+            while (
+              (row + rowPlus) < 8 && (row + rowPlus) > -1 &&
+              (col + colPlus) < 8 && (col + colPlus) > -1
+            ) {
+              row += rowPlus;
+              col += colPlus;
+              // if there is a black piece in the next square
+              if (
+                nextBoardState[row][col] === WBISHOP ||
+                nextBoardState[row][col] === WQUEEN
+              ) {
+                return false;
+              }
+              if (nextBoardState[row][col] !== 0) {
+                break;
+              }
+            }
+          }
+          // check for pawns
+
+          if (
+            kingRow - 1 > -1 && kingCol - 1 > -1 &&
+            nextBoardState[kingRow - 1][kingCol - 1] === WPAWN
+          ) {
+            console.log("pawn check");
+            return false;
+          }
+          if (
+            kingRow - 1 > -1 && kingCol + 1 < 8 &&
+            nextBoardState[kingRow - 1][kingCol + 1] === WPAWN
+          ) {
+            console.log("pawn check");
+            return false;
+          }
+
+          // check for king
+          movements = [
+            [0, 1],
+            [0, -1],
+            [1, 0],
+            [-1, 0],
+            [-1, -1],
+            [1, -1],
+            [1, 1],
+            [-1, 1],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            if (
+              kingRow + rowPlus > 7 || kingRow + rowPlus < 0 ||
+              kingCol + colPlus > 7 || kingCol + colPlus < 0
+            ) {
+              continue;
+            }
+            if (
+              nextBoardState[kingRow + rowPlus][kingCol + colPlus] === WKING
+            ) {
+              return false;
+            }
+          }
+          // check for knights
+
+          movements = [
+            [2, 1],
+            [2, -1],
+            [1, 2],
+            [-1, 2],
+            [-2, 1],
+            [-2, -1],
+            [1, -2],
+            [-1, -2],
+          ];
+          for (const [rowPlus, colPlus] of movements) {
+            if (
+              kingRow + rowPlus > 7 || kingRow + rowPlus < 0 ||
+              kingCol + colPlus > 7 || kingCol + colPlus < 0
+            ) {
+              continue;
+            }
+            if (
+              nextBoardState[kingRow + rowPlus][kingCol + colPlus] === WKNIGHT
+            ) {
+              return false;
+            }
+          }
         }
         break;
       }
@@ -873,7 +1022,7 @@ class ChessGame {
       if (
         this.checkMoveLegality(
           MOVE_VERSION +
-          e.target.id +
+          prevCoordinate +
           nextCoordinate,
         )
       ) {
@@ -882,31 +1031,9 @@ class ChessGame {
           nextCoordinate,
           pieceImage.pieceName,
         );
-        if (promotion !== 0) {
-          pieceImage.pieceName = promotion;
-          pieceImage.src = `assets/${pieceNames[promotion]}.svg`;
-        }
-        pieceImage.style.gridArea = nextCoordinate;
-        let prevCoordinateRow = prevCoordinate.charCodeAt(1) - "1".charCodeAt();
-        let prevCoordinateColumn = prevCoordinate.charCodeAt(0) -
-          "a".charCodeAt();
-        let nextCoordinateRow = nextCoordinate.charCodeAt(1) - "1".charCodeAt();
-        let nextCoordinateColumn = nextCoordinate.charCodeAt(0) -
-          "a".charCodeAt();
 
-        this.boardState[prevCoordinateRow][prevCoordinateColumn] = 0;
-        this.boardState[nextCoordinateRow][nextCoordinateColumn] =
-          pieceImage.pieceName;
-        if (this.piecesDisplays.get(nextCoordinate) !== undefined) {
-          this.piecesDisplays.get(nextCoordinate).remove();
-          this.piecesDisplays.delete(nextCoordinate);
-        }
-        this.piecesDisplays.delete(prevCoordinate);
-        this.piecesDisplays.set(nextCoordinate, pieceImage);
-        pieceImage.id = nextCoordinate;
-        pieceImage.style.gridArea = nextCoordinate;
-        this.whiteToMove = !this.whiteToMove;
-        console.log(this.boardState);
+        ws.send(MOVE_VERSION + prevCoordinate + nextCoordinate + promotion);
+        // render logic
       }
     });
 
@@ -925,3 +1052,41 @@ class ChessGame {
 const chessBoard = new ChessGame(chessboardDisplay);
 chessBoard.initializeBoard();
 chessBoard.renderBoard();
+
+ws.onerror = function() {
+  console.error(error);
+};
+
+ws.onmessage = (event) => {
+  let [prevCoordinate, nextCoordinate, promotion] = separateElements(
+    event.data,
+  );
+  let pieceImage = document.getElementById(prevCoordinate);
+  console.log("data: ", event.data);
+  console.log(pieceImage);
+  if (promotion !== 0) {
+    pieceImage.pieceName = promotion;
+    pieceImage.src = `assets/${pieceNames[promotion]}.svg`;
+  }
+  pieceImage.style.gridArea = nextCoordinate;
+  let prevCoordinateRow = prevCoordinate.charCodeAt(1) - "1".charCodeAt();
+  let prevCoordinateColumn = prevCoordinate.charCodeAt(0) -
+    "a".charCodeAt();
+  let nextCoordinateRow = nextCoordinate.charCodeAt(1) - "1".charCodeAt();
+  let nextCoordinateColumn = nextCoordinate.charCodeAt(0) -
+    "a".charCodeAt();
+
+  chessBoard.boardState[nextCoordinateRow][nextCoordinateColumn] =
+    chessBoard.boardState[prevCoordinateRow][prevCoordinateColumn];
+  chessBoard.boardState[prevCoordinateRow][prevCoordinateColumn] = 0;
+  if (chessBoard.piecesDisplays.get(nextCoordinate) !== undefined) {
+    chessBoard.piecesDisplays.get(nextCoordinate).remove();
+    chessBoard.piecesDisplays.delete(nextCoordinate);
+  }
+  chessBoard.piecesDisplays.delete(prevCoordinate);
+  chessBoard.piecesDisplays.set(nextCoordinate, pieceImage);
+  pieceImage.id = nextCoordinate;
+  pieceImage.style.gridArea = nextCoordinate;
+  chessBoard.whiteToMove = !chessBoard.whiteToMove;
+  console.log(chessBoard.boardState);
+};

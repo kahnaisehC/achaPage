@@ -1,12 +1,9 @@
 package chessgame
 
-import "sync"
-
 type Chessgame struct {
-	sync.Mutex
 	Moves     []string
 	Variant   string
-	GameState []string
+	GameState string
 	White     string
 	Black     string
 }
