@@ -1,4 +1,6 @@
 const MOVE_VERSION = "0";
+const GAME_ID = document.getElementById("gamejs").getAttribute("data-game_id");
+console.log(GAME_ID);
 
 const chessboardDisplay = document.getElementById("chessboard");
 const [
@@ -48,7 +50,7 @@ const pieceNames = [
   "bP",
 ];
 
-const ws = new WebSocket("/ws");
+const ws = new WebSocket("/ws/" + GAME_ID);
 
 function arrayCoordToChessCoord(row, col) {
   return String.fromCharCode(col + "a".charCodeAt()) +
@@ -955,7 +957,7 @@ class ChessGame {
     const pieceInitials = pieceNames[piece];
     const pieceImage = document.createElement("img");
     pieceImage.pieceName = piece;
-    pieceImage.src = `assets/${pieceInitials}.svg`;
+    pieceImage.src = `/assets/${pieceInitials}.svg`;
     pieceImage.style.zIndex = 1;
     pieceImage.style.top = 0;
     pieceImage.style.left = 0;
@@ -1066,7 +1068,7 @@ ws.onmessage = (event) => {
   console.log(pieceImage);
   if (promotion !== 0) {
     pieceImage.pieceName = promotion;
-    pieceImage.src = `assets/${pieceNames[promotion]}.svg`;
+    pieceImage.src = `/assets/${pieceNames[promotion]}.svg`;
   }
   pieceImage.style.gridArea = nextCoordinate;
   let prevCoordinateRow = prevCoordinate.charCodeAt(1) - "1".charCodeAt();
