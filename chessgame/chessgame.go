@@ -136,8 +136,8 @@ func (chessgame *Chessgame) BlackLongCastle() bool {
 	return (1<<4)&chessgame.CastleEnPassantState == 0
 }
 
-func (chessgame *Chessgame) ColumnEnPassant() uint8 {
-	return chessgame.CastleEnPassantState % (1 << 4)
+func (chessgame *Chessgame) ColumnEnPassant() int8 {
+	return int8(chessgame.CastleEnPassantState % (1 << 4))
 }
 
 func (chessgame *Chessgame) InBounds(square pair) bool {
@@ -242,11 +242,11 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			canMove = true
 		}
 		// capture
-		if (nextSquare == addPair(prevSquare, pair{row: 1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: 1, col: 1})) && !isWhite(chessgame.getSquare(nextSquare)) {
+		if (nextSquare == addPair(prevSquare, pair{row: 1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: 1, col: 1})) &&
+			(!isWhite(chessgame.getSquare(nextSquare)) || nextSquare.col == chessgame.ColumnEnPassant()) {
 			canMove = true
 		}
 		// TODO: handle promotion
-		// TODO: handle En Passant
 
 	case WQUEEN:
 		directions = []pair{
@@ -320,10 +320,11 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			canMove = true
 		}
 		// capture
-		if (nextSquare == addPair(prevSquare, pair{row: -1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: -1, col: 1})) && isWhite(chessgame.getSquare(nextSquare)) {
+		if (nextSquare == addPair(prevSquare, pair{row: -1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: -1, col: 1})) &&
+			(isWhite(chessgame.getSquare(nextSquare)) || nextSquare.col == chessgame.ColumnEnPassant()) {
 			canMove = true
 		}
-		// TODO: handle En Passant
+
 		// TODO: handle promotion
 
 	case BQUEEN:
