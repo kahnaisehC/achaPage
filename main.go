@@ -106,7 +106,7 @@ func wsGameHandler(c echo.Context) error {
 		}
 		if err := chessg.MakeMove(msg); err != nil {
 			fmt.Println(err.Error())
-			return err
+			continue
 		}
 		err = sendMessageToAllPool(msg)
 		if err != nil {
