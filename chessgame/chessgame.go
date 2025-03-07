@@ -3,7 +3,6 @@ package chessgame
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 const (
@@ -43,8 +42,8 @@ type pair struct {
 
 func addPair(a, b pair) pair {
 	return pair{
-		row: a.row + b.row,
 		col: a.col + b.col,
+		row: a.row + b.row,
 	}
 }
 
@@ -57,6 +56,11 @@ type Chessgame struct {
 	WhiteToMove          bool
 	BoardState           []uint64
 	CastleEnPassantState uint8
+	BlackKingCastle      bool
+	BlackQueenCastle     bool
+	WhiteKingCastle      bool
+	WhiteQueenCastle     bool
+	EnPassantSquare      pair
 	// NOTE: 0 0 0 0 0 0 0 0
 	// 0: short white castle availability
 	// 0: long white castle availability
@@ -69,11 +73,10 @@ type Chessgame struct {
 }
 
 func CreateChessGame(variant, initialPos string, white, black int) Chessgame {
-	fmt.Print(strconv.FormatBool(true))
 	boardSize := 8
 	boardState := make([]uint64, 12)
 	if initialPos == "" {
-		initialPos = "RNBKQBNR|PPPPPPPP|........|........|........|........|pppppppp|rnbkqbnr"
+		initialPos = "RNBQRBNR|PPPPPPPP|........|........|........|........|pppppppp|rnbkqbnr"
 	}
 	if variant == "" {
 		variant = "classic"
@@ -84,13 +87,16 @@ func CreateChessGame(variant, initialPos string, white, black int) Chessgame {
 		if initialPos[i] == '|' {
 			boardRow++
 			boardCol = 0
+			fmt.Println()
 			continue
 		}
 		if initialPos[i] == '.' {
 			boardCol++
+			fmt.Printf("%v\t", 0)
 			continue
 		}
 		var bitPosition uint64 = (1 << (boardCol + boardSize*boardRow))
+		fmt.Printf("%v\t", charToPiece[initialPos[i]]-1)
 		boardState[charToPiece[initialPos[i]]-1] |= bitPosition
 		boardCol++
 	}
@@ -119,32 +125,20 @@ func pairToInt(sq pair) int8 {
 // 0: { bitwise value of the column of the last pawn moved
 // 0: { all zeroes for no previous two step pawn move
 // 0: {
-
-func (chessgame *Chessgame) WhiteShortCastle() bool {
-	return (1<<7)&chessgame.CastleEnPassantState == 0
-}
-
-func (chessgame *Chessgame) WhiteLongCastle() bool {
-	return (1<<6)&chessgame.CastleEnPassantState == 0
-}
-
-func (chessgame *Chessgame) BlackShortCastle() bool {
-	return (1<<5)&chessgame.CastleEnPassantState == 0
-}
-
-func (chessgame *Chessgame) BlackLongCastle() bool {
-	return (1<<4)&chessgame.CastleEnPassantState == 0
-}
-
-func (chessgame *Chessgame) ColumnEnPassant() int8 {
-	return int8(chessgame.CastleEnPassantState % (1 << 4))
-}
-
 func (chessgame *Chessgame) InBounds(square pair) bool {
 	return (square.col > -1 &&
 		square.col < 8 &&
 		square.row > -1 &&
 		square.row < 8)
+}
+
+func (chessgame *Chessgame) SquareIsThreatenedByPieces(square pair, pieces []int) bool {
+	fmt.Println("A SQUARE IS CHEKCING FOR THREATS`")
+	for v, piece := range pieces {
+		fmt.Println(piece)
+		fmt.Println(v)
+	}
+	return false
 }
 
 func (chessgame *Chessgame) getSquare(sq pair) int8 {
@@ -163,6 +157,21 @@ func (chessgame *Chessgame) getSquare(sq pair) int8 {
 
 func isWhite(piece int8) bool {
 	return piece < 7
+}
+
+func (chessgame *Chessgame) PrintBoard() {
+	for sq := 0; sq < 64; sq++ {
+		piece := 0
+		for i, val := range chessgame.BoardState {
+			if val>>(sq)&1 == 1 {
+				piece = i
+			}
+		}
+		if sq%8 == 0 {
+			fmt.Println()
+		}
+		fmt.Printf("%d\t", piece)
+	}
 }
 
 func (chessgame *Chessgame) MakeMove(move []byte) error {
@@ -191,13 +200,23 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 		return errors.New("invalid coordinates")
 	}
 	piece := chessgame.getSquare(prevSquare)
+	// fmt.Println("soy pieza ", piece)
 	if piece == 0 {
 		return errors.New("no piece in found in previous pair")
 	}
+	if isWhite(piece) != chessgame.WhiteToMove {
+		if isWhite(piece) {
+			return errors.New("black to move")
+		}
+		return errors.New("white to move ")
+	}
 
 	canMove := false
+	enPassantSquare := pair{-1, -1}
 	var movements []pair
 	var directions []pair
+	chessgame.PrintBoard()
+	fmt.Println()
 
 	switch piece {
 	case WKING:
@@ -211,12 +230,12 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			{col: -1, row: 0},
 			{col: -1, row: -1},
 		}
-		if chessgame.WhiteLongCastle() &&
+		if chessgame.WhiteQueenCastle &&
 			prevSquare.col == 4 && prevSquare.row == 0 &&
 			nextSquare.col == 2 && nextSquare.row == 0 {
 			canMove = true
 		}
-		if chessgame.WhiteShortCastle() &&
+		if chessgame.WhiteKingCastle &&
 			prevSquare.col == 4 && prevSquare.row == 0 &&
 			nextSquare.col == 6 && nextSquare.row == 0 {
 			canMove = true
@@ -238,12 +257,17 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			canMove = true
 		}
 		// move two steps
-		if nextSquare == addPair(prevSquare, pair{row: 2}) && chessgame.getSquare(nextSquare) == 0 && chessgame.getSquare(addPair(prevSquare, pair{row: 1})) == 0 && prevSquare.row == 1 {
+		if nextSquare == addPair(prevSquare, pair{row: 2}) &&
+			chessgame.getSquare(nextSquare) == 0 &&
+			chessgame.getSquare(addPair(prevSquare, pair{row: 1})) == 0 &&
+			prevSquare.row == 1 {
 			canMove = true
+			enPassantSquare = addPair(prevSquare, pair{row: 1})
 		}
 		// capture
-		if (nextSquare == addPair(prevSquare, pair{row: 1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: 1, col: 1})) &&
-			(!isWhite(chessgame.getSquare(nextSquare)) || nextSquare.col == chessgame.ColumnEnPassant()) {
+		if (nextSquare == addPair(prevSquare, pair{row: 1, col: -1}) ||
+			nextSquare == addPair(prevSquare, pair{row: 1, col: 1})) &&
+			(!isWhite(chessgame.getSquare(nextSquare)) || (nextSquare == chessgame.EnPassantSquare)) {
 			canMove = true
 		}
 		// TODO: handle promotion
@@ -287,12 +311,12 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			{col: -1, row: 0},
 			{col: -1, row: -1},
 		}
-		if chessgame.BlackLongCastle() &&
+		if chessgame.BlackQueenCastle &&
 			prevSquare.col == 4 && prevSquare.row == 7 &&
 			nextSquare.col == 2 && nextSquare.row == 7 {
 			canMove = true
 		}
-		if chessgame.BlackShortCastle() &&
+		if chessgame.BlackKingCastle &&
 			prevSquare.col == 4 && prevSquare.row == 7 &&
 			nextSquare.col == 6 && nextSquare.row == 7 {
 			canMove = true
@@ -318,10 +342,11 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 		// two steps
 		if nextSquare == addPair(prevSquare, pair{row: -2}) && chessgame.getSquare(nextSquare) == 0 && chessgame.getSquare(addPair(prevSquare, pair{row: -1})) == 0 && prevSquare.row == 6 {
 			canMove = true
+			enPassantSquare = addPair(prevSquare, pair{row: -1})
 		}
 		// capture
 		if (nextSquare == addPair(prevSquare, pair{row: -1, col: -1}) || nextSquare == addPair(prevSquare, pair{row: -1, col: 1})) &&
-			(isWhite(chessgame.getSquare(nextSquare)) || nextSquare.col == chessgame.ColumnEnPassant()) {
+			(isWhite(chessgame.getSquare(nextSquare)) || (nextSquare == chessgame.EnPassantSquare)) {
 			canMove = true
 		}
 
@@ -378,14 +403,39 @@ func (chessgame *Chessgame) MakeMove(move []byte) error {
 			currSquare = addPair(currSquare, direction)
 		}
 	}
-
 	if !canMove {
 		return errors.New("invalid move")
 	}
+
+	// TODO: Check if castling is legal
+	// whiteLongCastle
+	// fmt.Printf("%v == %v && %v && %v \n", piece, WKING, prevSquare == pair{row: 0, col: 4}, nextSquare == pair{row: 0, col: 2})
+	if (piece == WKING &&
+		prevSquare == pair{row: 0, col: 4} &&
+		nextSquare == pair{row: 0, col: 2}) {
+		blackPieces := []int{
+			BPAWN, BROOK, BKNIGHT, BBISHOP, BQUEEN, BKING,
+		}
+		chessgame.SquareIsThreatenedByPieces(pair{row: 0, col: 3}, blackPieces)
+	}
+	// whiteShortCastle
+
+	// blackLongCastle
+	// blackShortCastle
+
+	// TODO: Check next position legality
+
+	chessgame.WhiteToMove = !chessgame.WhiteToMove
+	chessgame.EnPassantSquare = enPassantSquare
+	// TODO: update state of castling legality
+
+	// delete any piece in "nextSquare"
 	for i := 0; i < len(chessgame.BoardState); i++ {
 		chessgame.BoardState[i] &= (^uint64(0) ^ 1<<pairToInt(nextSquare))
 	}
+	// put "piece" in "nextSquare"
 	chessgame.BoardState[piece-1] |= uint64(1 << pairToInt(nextSquare))
+	// delete "piece" in "prevSquare"
 	chessgame.BoardState[piece-1] &= (^uint64(0) ^ 1<<pairToInt(prevSquare))
 
 	return nil

@@ -44,7 +44,6 @@ func gameHandler(c echo.Context) error {
 
 func createLobby(c echo.Context) error {
 	game_id++
-	fmt.Printf("/game/%v", game_id)
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/game/%v", game_id))
 }
 
@@ -65,7 +64,6 @@ func createGameHandler(c echo.Context) error {
 	if err = sess.Save(c.Request(), c.Response().Writer); err != nil {
 		return err
 	}
-	fmt.Println(sess, sess.Values[GO_SESSION_ID])
 	return c.Render(http.StatusOK, "createGame", "")
 }
 

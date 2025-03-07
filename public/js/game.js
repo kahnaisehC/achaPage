@@ -11,13 +11,13 @@ const [
   WKNIGHT,
   WPAWN,
 ] = [
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-];
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+  ];
 const [
   BKING,
   BQUEEN,
@@ -26,13 +26,13 @@ const [
   BKNIGHT,
   BPAWN,
 ] = [
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-];
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+  ];
 
 const pieceNames = [
   undefined,
@@ -927,9 +927,9 @@ class ChessGame {
 
   getSquareCoordinates(coordinates) {
     const x = (coordinates.charCodeAt(0) - 97) * (1 / 8) *
-        this.display.offsetWidth + this.display.offsetLeft;
+      this.display.offsetWidth + this.display.offsetLeft;
     const y = (coordinates.charCodeAt(1) - 49) * (1 / 8) *
-        this.display.offsetHeight + this.display.offsetTop;
+      this.display.offsetHeight + this.display.offsetTop;
 
     return [x, y];
   }
@@ -971,9 +971,8 @@ class ChessGame {
     pieceImage.addEventListener("drag", (e) => {
       pieceImage.style.zIndex = 100;
       pieceImage.style.position = "absolute";
-      pieceImage.style.transform = `translate(${
-        e.pageX - this.display.offsetWidth / 16
-      }px, ${e.pageY - this.display.offsetHeight / 16}px)`;
+      pieceImage.style.transform = `translate(${e.pageX - this.display.offsetWidth / 16
+        }px, ${e.pageY - this.display.offsetHeight / 16}px)`;
     });
 
     pieceImage.addEventListener("dragstart", (e) => {
@@ -1025,8 +1024,8 @@ class ChessGame {
       if (
         this.checkMoveLegality(
           MOVE_VERSION +
-            prevCoordinate +
-            nextCoordinate,
+          prevCoordinate +
+          nextCoordinate,
         )
       ) {
         const promotion = this.getPromotion(
@@ -1056,7 +1055,7 @@ const chessBoard = new ChessGame(chessboardDisplay);
 chessBoard.initializeBoard();
 chessBoard.renderBoard();
 
-ws.onerror = function () {
+ws.onerror = function() {
   console.error(error);
 };
 
