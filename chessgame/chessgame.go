@@ -61,15 +61,6 @@ type Chessgame struct {
 	WhiteKingCastle      bool
 	WhiteQueenCastle     bool
 	EnPassantSquare      pair
-	// NOTE: 0 0 0 0 0 0 0 0
-	// 0: short white castle availability
-	// 0: long white castle availability
-	// 0: short black castle availability
-	// 0: long black castle availability
-	// 0: {
-	// 0: { bitwise value of the column of the last pawn moved
-	// 0: { all zeroes for no previous two step pawn move
-	// 0: {
 }
 
 func CreateChessGame(variant, initialPos string, white, black int) Chessgame {
